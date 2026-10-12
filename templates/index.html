@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineSearch — Discover Movies & Series</title>
+    <meta name="description" content="Search millions of movies, TV series, and episodes powered by OMDB. Discover ratings, cast, plots, and more.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-mode" id="body">
+
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <div class="logo-icon">🎬</div>
+                <span class="logo-text">Cine<span class="logo-accent">Search</span></span>
+            </div>
+            <div class="nav-actions">
+                <button class="nav-btn" id="watchlistNavBtn" onclick="toggleWatchlistPanel()">
+                    <span class="btn-icon">❤️</span>
+                    <span>Watchlist</span>
+                    <span class="watchlist-count" id="watchlistCount">0</span>
+                </button>
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <span class="theme-icon" id="themeIcon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="heroSection">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="hero-line">Discover Your</span>
+                <span class="hero-line gradient-text">Next Favorite</span>
+                <span class="hero-line">Movie 🎥</span>
+            </h1>
+            <p class="hero-subtitle">Search millions of movies, series & episodes from the world's largest movie database</p>
+
+            <!-- Search Bar -->
+            <div class="search-wrapper" id="searchWrapper">
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="Search movies, series, episodes..."
+                        autocomplete="off"
+                        aria-label="Search movies"
+                    >
+                    <button class="search-btn" id="searchBtn" onclick="performSearch()">Search</button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label class="filter-label" for="typeFilter">Type</label>
+                        <select id="typeFilter" class="filter-select">
+                            <option value="">All Types</option>
+                            <option value="movie">🎬 Movies</option>
+                            <option value="series">📺 Series</option>
+                            <option value="episode">🎞️ Episodes</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="yearFilter">Year</label>
+                        <input
+                            type="number"
+                            id="yearFilter"
+                            class="filter-input"
+                            placeholder="e.g. 2023"
+                            min="1888"
+                            max="2026"
+                        >
+                    </div>
+                    <button class="clear-filters-btn" onclick="clearFilters()">✕ Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="scroll-hint" id="scrollHint">
+            <span>Explore trending</span>
+            <div class="scroll-arrow">↓</div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+
+        <!-- Search Results Section -->
+        <section class="results-section" id="resultsSection" style="display:none;">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title" id="resultsTitle">Search Results</h2>
+                    <p class="results-meta" id="resultsMeta"></p>
+                </div>
+                <div class="sort-controls">
+                    <button class="view-toggle active" id="gridViewBtn" onclick="setView('grid')" title="Grid View">⊞</button>
+                    <button class="view-toggle" id="listViewBtn" onclick="setView('list')" title="List View">☰</button>
+                </div>
+            </div>
+
+            <div class="movies-grid" id="moviesGrid"></div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination" style="display:none;">
+                <button class="page-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
+                <div class="page-numbers" id="pageNumbers"></div>
+                <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+            </div>
+        </section>
+
+        <!-- Trending Section -->
+        <section class="trending-section" id="trendingSection">
+            <div class="section-header">
+                <h2 class="section-title">🔥 Must Watch Classics</h2>
+            </div>
+            <div class="movies-grid" id="trendingGrid">
+                <div class="loading-grid">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Movie Detail Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" id="movieModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <button class="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
+            <div class="modal-content" id="modalContent">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Watchlist Sidebar -->
+    <div class="watchlist-overlay" id="watchlistOverlay" onclick="closeWatchlistPanel(event)"></div>
+    <div class="watchlist-panel" id="watchlistPanel">
+        <div class="watchlist-header">
+            <h3>❤️ My Watchlist</h3>
+            <button class="panel-close" onclick="toggleWatchlistPanel()">✕</button>
+        </div>
+        <div class="watchlist-body" id="watchlistBody">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <footer class="footer">
+        <p>Built with ❤️ using <strong>Flask</strong> + <strong>OMDB API</strong> | CineSearch © 2026</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
